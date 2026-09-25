@@ -49,7 +49,7 @@ header.top{padding:18px 0 10px;border-bottom:1px solid var(--line);margin-bottom
 .insight{display:flex;gap:12px;align-items:flex-start;background:var(--insight-grad);border:1px solid var(--line);border-left:4px solid var(--petrol);border-radius:12px;padding:11px 16px;margin:12px 0;box-shadow:var(--shadow)}
 .insight .ico{font-family:Fraunces;font-weight:900;color:var(--petrol);font-size:20px;line-height:1}
 .insight p{margin:0;font-size:13.5px;color:var(--ink2)}.insight b{color:var(--ink)}
-.kpis{display:grid;gap:12px;margin-bottom:4px}.k5{grid-template-columns:repeat(5,1fr)}.k6{grid-template-columns:repeat(6,1fr)}
+.kpis{display:grid;gap:12px;margin-bottom:4px}.k4{grid-template-columns:repeat(4,1fr)}.k5{grid-template-columns:repeat(5,1fr)}.k6{grid-template-columns:repeat(6,1fr)}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px;box-shadow:var(--shadow)}
 .kpi .k-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--gris);font-weight:600}
 .kpi .k-val{font-family:Fraunces;font-weight:600;font-size:26px;letter-spacing:-.02em;margin-top:4px;line-height:1}
@@ -90,8 +90,17 @@ table.master tr.sel td{background:#eaf1ee}
 .tag{display:inline-block;font-size:10px;background:var(--paper2);color:var(--ink2);padding:2px 8px;border-radius:6px;margin-left:6px;font-weight:600}
 .note{font-size:12px;color:var(--ink2);background:var(--paper2);border-radius:8px;padding:10px 14px;margin-top:6px}
 footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--line);font-size:11px;color:var(--gris);line-height:1.7}
-@media(max-width:980px){.k5,.k6{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
-@media(max-width:560px){.k5,.k6{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:980px){.k4,.k5,.k6{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr}}
+@media(max-width:560px){.k4,.k5,.k6{grid-template-columns:repeat(2,1fr)}}
+.rep-toolbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.rep-toolbar .fgrp{min-width:220px}
+.rep-quick{font-family:inherit;font-size:12px;font-weight:600;color:var(--petrol);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.rep-quick:hover{border-color:var(--petrol);background:var(--paper2)}
+.rep-list-wrap{max-height:320px;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.rep-list-wrap table.master{font-size:12px}
+.rep-list-wrap thead th{position:sticky;top:0;background:var(--card);z-index:1}
+tr.rep-excl td{opacity:.42;text-decoration:line-through}
+#repCount{font-size:12px;color:var(--gris);margin-top:8px}
 .egsel{font-size:11.5px;font-weight:600;border:1px solid var(--line);border-radius:7px;padding:3px 6px;background:var(--card);cursor:pointer;max-width:160px}
 .egsel:hover{border-color:var(--petrol)}
 .btnexp{flex:none;font-size:11.5px;font-weight:600;color:var(--petrol);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 12px;cursor:pointer;white-space:nowrap}
@@ -209,6 +218,7 @@ table.minuta tr:hover td{background:var(--paper2)}
     <button id="nHes" onclick="setSec('hes')">Detalle HES</button>
     <button id="nMin" onclick="setSec('min')">Minuta Reunión</button>
     <button id="nOth" onclick="setSec('oth')">Others</button>
+    <button id="nRep" onclick="setSec('rep')">Reporte</button>
   </div>
 </header>
 
@@ -339,6 +349,31 @@ table.minuta tr:hover td{background:var(--paper2)}
     <div class="game-card"><h3>Breakout</h3><div class="g-sub">Mouse o ←→ · rompe todos los ladrillos · 3 vidas</div><canvas id="cBreak" width="300" height="260" tabindex="0"></canvas><div class="g-score"><span id="sBreak">Puntos: 0 · Vidas: 3</span><span class="g-hint">click para jugar/pausar</span></div></div>
   </div>
 </div>
+<div id="secRep" class="hidden">
+  <p style="font-size:13px;color:var(--ink2);margin:0 0 14px"><b>Análisis de cartera con exclusiones.</b> Marca los contratos que quieras sacar de la vista (por ejemplo Linde Gas o GE Global) para ver cómo se comporta el resto de la cartera sin que los contratos grandes tapen el resto.</p>
+  <div class="rep-toolbar">
+    <button class="rep-quick" onclick="repExcludeGroup(['4600023382'])">Excluir Linde Gas</button>
+    <button class="rep-quick" onclick="repExcludeGroup(['4600024467','4600024470'])">Excluir GE Global (ambos)</button>
+    <button class="rep-quick" onclick="repClear()">↺ Limpiar exclusiones</button>
+    <div class="fgrp"><label>Buscar contrato</label><input id="repSearch" placeholder="proveedor, N° SAP o descripción" oninput="renderRep()"></div>
+  </div>
+  <div class="panel">
+    <h3>Contratos incluidos en el análisis</h3>
+    <div class="ph-sub">Desmarca un contrato para sacarlo del gráfico, KPIs y desglose de abajo. La selección se guarda en este navegador.</div>
+    <div class="rep-list-wrap"><table class="master"><thead><tr><th></th><th>N° SAP</th><th>Proveedor</th><th>Categoría</th><th style="text-align:right">Comprometido</th><th>Vigencia</th></tr></thead><tbody id="repList"></tbody></table></div>
+    <div id="repCount"></div>
+  </div>
+  <div class="kpis k4" id="repKpis" style="margin-top:16px"></div>
+  <div class="grid" style="margin-top:4px">
+    <div class="panel" style="grid-column:1/-1"><h2 style="margin:0 0 2px">Gasto mensual — histórico y proyección, contratos incluidos</h2>
+      <div class="ph-sub">Mismo cálculo que el Resumen, pero solo sobre los contratos que dejaste marcados arriba.</div>
+      <div id="repChart"></div></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="panel"><h3>Comprometido vs ejecutado (contratos incluidos)</h3><div id="repBars"></div></div>
+    <div class="panel"><h3>Cartera por administrador (contratos incluidos)</h3><div class="div-grid" id="repDivs"></div></div>
+  </div>
+</div>
 <footer id="footer"></footer>
 
 </div>
@@ -352,6 +387,54 @@ let EG={};
 try{EG=JSON.parse(localStorage.getItem('eraEstadosGestion')||'{}');}catch(e){EG={};}
 C.forEach(c=>{if(!(c.id in EG))EG[c.id]=c.estado_gestion||'Sin definir';});
 const egOf=c=>EG[c.id]||c.estado_gestion||'Sin definir';
+let REP_EXCL=new Set();
+try{REP_EXCL=new Set(JSON.parse(localStorage.getItem('eraReporteExcl')||'[]'));}catch(e){REP_EXCL=new Set();}
+function repSave(){try{localStorage.setItem('eraReporteExcl',JSON.stringify([...REP_EXCL]));}catch(e){}}
+function repToggle(id){if(REP_EXCL.has(id))REP_EXCL.delete(id);else REP_EXCL.add(id);repSave();renderRep();}
+function repExcludeGroup(ids){ids.forEach(id=>REP_EXCL.add(id));repSave();renderRep();}
+function repClear(){REP_EXCL.clear();repSave();renderRep();}
+function repHist(idsSet){
+  const by={};
+  HES.forEach(h=>{
+    if(h.status!=='Liberado'&&h.status!=='Liberado Parcial')return;
+    if(!idsSet.has(h.contrato))return;
+    const f=h.fecha;if(!f)return;
+    const m=f.slice(0,7);
+    by[m]=(by[m]||0)+(h.usd||0);
+  });
+  return Object.keys(by).sort().map(m=>({m,v:Math.round(by[m]*100)/100})).slice(-24);
+}
+function renderRep(){
+  const q=(document.getElementById('repSearch')&&document.getElementById('repSearch').value||'').toLowerCase().trim();
+  const list=[...C].sort((a,b)=>b.valor_previsto_usd-a.valor_previsto_usd);
+  const shown=q?list.filter(c=>(c.proveedor||'').toLowerCase().includes(q)||(c.id||'').includes(q)||(c.desc||'').toLowerCase().includes(q)):list;
+  document.getElementById('repList').innerHTML=shown.map(c=>{
+    const ex=REP_EXCL.has(c.id);
+    return '<tr class="'+(ex?'rep-excl':'')+'"><td style="width:30px;text-align:center"><input type="checkbox" '+(ex?'checked':'')+' onchange="repToggle(\''+c.id+'\')"></td><td>'+c.id+'</td><td>'+c.proveedor+'</td><td>'+(c.categoria||'')+'</td><td style="text-align:right">'+fmtUk(c.valor_previsto_usd)+'</td><td>'+(c.vigencia||'')+'</td></tr>';
+  }).join('');
+  document.getElementById('repCount').textContent=REP_EXCL.size+' de '+C.length+' contratos excluidos de la vista';
+  const included=C.filter(c=>!REP_EXCL.has(c.id));
+  const inclIds=new Set(included.map(c=>c.id));
+  const vigTotal=C.filter(c=>c.vigencia==='VIGENTE');
+  const vigIncl=included.filter(c=>c.vigencia==='VIGENTE');
+  const com=vigIncl.reduce((a,c)=>a+c.valor_previsto_usd,0);
+  const eje=vigIncl.reduce((a,c)=>a+c.ejecutado_usd,0);
+  const pct=com?eje/com*100:0;
+  const exclCom=C.filter(c=>REP_EXCL.has(c.id)&&c.vigencia==='VIGENTE').reduce((a,c)=>a+c.valor_previsto_usd,0);
+  document.getElementById('repKpis').innerHTML=
+    kpi('Cartera considerada',fmtUk(com),vigIncl.length+' de '+vigTotal.length+' contratos vigentes incluidos')+
+    kpi('Ejecutado',pct.toFixed(0)+'<small>%</small>',fmtUk(eje)+' consumidos vía HES')+
+    kpi('Excluido de la vista',fmtUk(exclCom),REP_EXCL.size+' contrato(s) fuera del análisis')+
+    kpi('Proveedores incluidos',new Set(vigIncl.map(c=>c.proveedor)).size,'entre los contratos vigentes considerados');
+  const hist=repHist(inclIds);
+  const ap=aggProj(included);
+  drawExeChart(hist,ap,'repChart');
+  chCompromiso(vigIncl,'repBars');
+  document.getElementById('repDivs').innerHTML=divStats(included).map(s=>{
+    const al=s.issues?['bad','⚠ '+s.issues+' con alerta crítica']:(s.warn?['warn','◷ '+s.warn+' por decidir pronto']:['ok','✓ sin acciones urgentes']);
+    return '<div class="div-card"><h4>'+s.d+'</h4><div class="d-meta">'+s.n+' vigentes · '+fmtUk(s.com)+'</div><div class="d-meta">Próx. término: '+(s.next?my(s.next):'—')+'</div><div class="d-alert '+al[0]+'">'+al[1]+'</div></div>';
+  }).join('');
+}
 const EGCOL={'Sin definir':'var(--gris)','Sin iniciar':'var(--rojo)','En licitación':'var(--azul)','En prórroga':'var(--ambar)','Renovación en curso':'var(--azul)','A no recontratar':'var(--ink2)','Cerrado/Finiquito':'var(--verde)'};
 function setEstado(id,val){EG[id]=val;try{localStorage.setItem('eraEstadosGestion',JSON.stringify(EG));}catch(e){}render();}
 function exportEstados(){const o={};C.forEach(c=>o[c.id]=egOf(c));const blob=new Blob([JSON.stringify(o,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='estados_gestion.json';a.click();}
@@ -399,18 +482,19 @@ function filtered(){return C.filter(c=>{
   if(F.prov&&c.proveedor!==F.prov)return false;if(F.adm&&c.usuario!==F.adm)return false;if(F.eg&&egOf(c)!==F.eg)return false;if(F.aeag&&c.ae_ag_propuesto!==F.aeag)return false;return true;});}
 
 function setSec(s){sec=s;
-  ['Exe','Dec','Con','Hes','Min','Oth'].forEach(k=>{
+  ['Exe','Dec','Con','Hes','Min','Oth','Rep'].forEach(k=>{
     document.getElementById('n'+k).classList.toggle('on',s===k.toLowerCase());
     document.getElementById('sec'+k).classList.toggle('hidden',s!==k.toLowerCase());});
   document.getElementById('grpHes').style.display=s==='hes'?'':'none';
   document.getElementById('grpHesEstado').style.display=s==='hes'?'':'none';
   document.getElementById('grpSearch').style.display=s==='hes'?'':'none';
-  const noFilters=(s==='oth'||s==='exe'||s==='min');
+  const noFilters=(s==='oth'||s==='exe'||s==='min'||s==='rep');
   document.querySelector('.filters').style.display=noFilters?'none':'';
   document.getElementById('insight').style.display=noFilters?'none':'';
   if(s==='oth'){initGames();return;}
   if(s==='exe'){renderExe();countUp();return;}
   if(s==='min'){renderMinuta();return;}
+  if(s==='rep'){renderRep();return;}
   render();}
 
 function kpi(label,val,sub,opt){opt=opt||{};return '<div class="kpi '+(opt.cls||'')+'"><div class="k-label">'+label+'</div><div class="k-val">'+val+'</div><div class="k-sub">'+(sub||'')+'</div>'+(opt.bar!=null?'<div class="bar"><i style="width:'+Math.min(100,opt.bar)+'%;background:'+(opt.barcol||COL.petrol)+'"></i></div>':'')+'</div>';}
@@ -517,7 +601,7 @@ function chUrg(el,rows){const order=['vencido','urgente','ahora','planificar','h
 function hbars(el,items){const max=Math.max(...items.map(i=>i.value),1);
   el.innerHTML=items.map(i=>'<div class="hbar-row"><span class="lbl" title="'+i.label+'">'+i.label+'</span><span class="track"><i style="width:'+(100*i.value/max)+'%;background:'+COL.petrol+'" data-tt="'+i.label+': '+fmtU(i.value)+'"></i></span><span class="v">'+fmtUk(i.value)+'</span></div>').join('');bindTT(el);}
 function aggBy(rows,key){const m={};rows.forEach(c=>{const k=c[key]||'(sin dato)';m[k]=(m[k]||0)+(c.valor_previsto_usd||0);});return Object.entries(m).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);}
-function chCompromiso(rows){const el=document.getElementById('chCompromiso');const top=[...rows].sort((a,b)=>b.valor_previsto_usd-a.valor_previsto_usd).slice(0,8);const max=Math.max(...top.map(c=>c.valor_previsto_usd),1);
+function chCompromiso(rows,elId){const el=document.getElementById(elId||'chCompromiso');const top=[...rows].sort((a,b)=>b.valor_previsto_usd-a.valor_previsto_usd).slice(0,8);const max=Math.max(...top.map(c=>c.valor_previsto_usd),1);
   el.innerHTML=top.map(c=>{const e=c.ejecutado_usd||0,p=c.valor_previsto_usd||0,we=100*e/max,ws=100*(p-e)/max;
     return '<div class="hbar-row"><span class="lbl" title="'+c.proveedor+'">'+c.proveedor+'</span><span class="track"><i style="width:'+we+'%;background:'+COL.petrol+';border-radius:5px 0 0 5px" data-tt="<b>'+c.proveedor+'</b><br>Ejecutado '+fmtU(e)+' · '+(100*e/p).toFixed(0)+'%"></i><i style="width:'+ws+'%;background:'+COL.paper2+';position:absolute;left:'+we+'%;top:0" data-tt="Saldo '+fmtU(p-e)+'"></i></span><span class="v">'+fmtUk(p)+'</span></div>';}).join('');
   bindTT(el);el.insertAdjacentHTML('beforeend','<div class="legend"><span><i class="dot" style="background:'+COL.petrol+'"></i>Ejecutado</span><span><i class="dot" style="background:'+COL.paper2+'"></i>Saldo</span></div>');}
@@ -726,9 +810,10 @@ function aggProj(rows){
   const hi=axis.map((_,i)=>withP.reduce((a,c)=>a+((c.proy.p90?c.proy.p90[i]:c.proy.v[i])||0),0));
   return {m:axis,v,lo,hi,n:withP.length};
 }
-function divStats(){
+function divStats(rows){
+  rows=rows||C;
   const map={};
-  C.forEach(c=>{const d=c.usuario||'Sin asignar';(map[d]=map[d]||[]).push(c);});
+  rows.forEach(c=>{const d=c.usuario||'Sin asignar';(map[d]=map[d]||[]).push(c);});
   return Object.entries(map).map(([d,cs])=>{
     const vig=cs.filter(c=>c.vigencia==='VIGENTE');
     const com=vig.reduce((a,c)=>a+c.valor_previsto_usd,0);
@@ -801,8 +886,8 @@ function renderExe(){
   document.getElementById('exePend').innerHTML=pend.length?pend.map(e=>'<div class="exc-item"><span class="x-dot" style="background:'+e.col+'"></span><span>'+e.html+'</span></div>').join(''):'<p style="color:var(--gris);font-size:12.5px">Nada pendiente. Buen trabajo.</p>';
 }
 function goC(id){setSec('con');selectContract(id);}
-function drawExeChart(hist,ap){
-  const el=document.getElementById('exeChart');
+function drawExeChart(hist,ap,elId){
+  const el=document.getElementById(elId||'exeChart');
   const all=hist.map(s=>({m:s.m,v:s.v})).concat(ap?ap.m.map((m,i)=>({m,v:ap.v[i]})):[]);
   if(!all.length){el.innerHTML='';return;}
   const W=1080,H=230,pad={l:56,r:14,t:16,b:30};
